@@ -13,7 +13,7 @@ namespace SignalApi.Controllers
             try
             {
                 var Payload = await GoogleJsonWebSignature.ValidateAsync(idToken);
-                var result = Ok(new { Message = "Identity confirmed" });
+                var result = Ok(new { Message = $"Identity confirmed: {Payload.Email}" });
 
                 return result;
             }

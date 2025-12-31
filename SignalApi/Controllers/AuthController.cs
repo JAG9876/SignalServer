@@ -3,12 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace SignalApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
-        [HttpPost("google")]
-        public async Task<IActionResult> ConfirmGoogleIdentity(string idToken)
+        [HttpPost]
+        public async Task<IActionResult> LoginWithGoogle(string idToken)
         {
             try
             {

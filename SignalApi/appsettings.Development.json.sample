@@ -1,0 +1,21 @@
+{
+    "Logging": {
+        "LogLevel": {
+            "Default": "Information",
+            "Microsoft.AspNetCore": "Warning"
+        }
+    },
+    "Kestrel": {
+        "Certificates": {
+            "Default": {
+                "Path": "C:\\temp\\kivaCert\\kiva.crawlsoft.com.pfx",
+                "Password": "1234"
+            }
+        },
+        "Endpoints": {
+            "Https": {
+                "Url": "https://kiva.crawlsoft.com:7102" // Or your desired HTTPS URL/port
+            }
+        }
+    }
+}

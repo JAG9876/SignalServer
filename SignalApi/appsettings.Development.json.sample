@@ -8,13 +8,13 @@
     "Kestrel": {
         "Certificates": {
             "Default": {
-                "Path": "C:\\temp\\kivaCert\\kiva.crawlsoft.com.pfx",
-                "Password": "1234"
+                "Path": "\\path\\to\\certificate.pfx",
+                "Password": "your-password"
             }
         },
         "Endpoints": {
             "Https": {
-                "Url": "https://kiva.crawlsoft.com:7102" // Or your desired HTTPS URL/port
+                "Url": "https://your.domain.name:7102" // Or your desired HTTPS URL/port
             }
         }
     }

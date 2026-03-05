@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace SignalApi.Controllers
 {
-    [Route("api/[controller]/[action]")]
+    [Route("api/v1/[controller]/[action]")]
     [ApiController]
     public class AuthController : ControllerBase
     {

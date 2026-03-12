@@ -1,6 +1,6 @@
 ﻿namespace SignalApi.Controllers
 {
-    public class AudiosDto
+    public class AudiosEventModel
     {
         public string CorrelationId { get; set; } = string.Empty;
 
@@ -15,6 +15,6 @@
         /// </summary>
         public bool RequestedByServer { get; set; }
 
-        public AudioRecordingDto[] Recordings { get; set; } = [];
+        public AudioRecordingModel[] Recordings { get; set; } = [];
     }
 }

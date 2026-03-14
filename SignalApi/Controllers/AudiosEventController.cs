@@ -27,7 +27,7 @@ namespace SignalApi.Controllers
                 Recordings = MapRecordings(audios.Recordings)
             };
             _messageService.AddAudiosEvent(audiosEvent);
-            _logger.LogInformation("Received audios event from device {DeviceId} with correlation ID {CorrelationId}", audios.DeviceId, audios.CorrelationId);
+            _logger.LogInformation($"Received audios event from device {audios.DeviceId} with correlation ID {audios.CorrelationId}");
 
             return Ok(new { Message = "Audios received", Count = audios.Recordings.Count() });
         }

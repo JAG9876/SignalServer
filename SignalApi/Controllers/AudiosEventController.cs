@@ -3,7 +3,7 @@
 namespace SignalApi.Controllers
 {
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/v1/audio")]
     public class AudiosEventController : ControllerBase
     {
         private readonly IMessageProducer _messageProducer;
@@ -16,7 +16,7 @@ namespace SignalApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddAudiosEvent(AudiosEventModel audios)
+       public async Task<IActionResult> AddAudiosEvent(AudiosEventModel audios)
         {
             var audiosEvent = new AudiosEventDto
             {

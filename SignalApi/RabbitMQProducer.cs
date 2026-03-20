@@ -7,14 +7,12 @@ namespace SignalApi
 {
     public sealed class RabbitMQProducer : IMessageProducer, IDisposable
     {
-        private int _timeToLive;
-        private readonly ILogger<RabbitMQProducer> _logger;
+        private readonly int _timeToLive;
         private readonly ConnectionFactory _connectionFactory;
         private IConnection? _connection = null;
 
-        public RabbitMQProducer(IConfiguration configuration, ILogger<RabbitMQProducer> logger)
+        public RabbitMQProducer(IConfiguration configuration)
         {
-            _logger = logger;
             _connectionFactory = new ConnectionFactory
             {
                 HostName = configuration["Signal:RabbitMQ:HostName"] ?? "",

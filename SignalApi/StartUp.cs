@@ -17,8 +17,6 @@ namespace SignalApi
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
 
-            //var rabbitMQProducer = new RabbitMQProducer(Configuration);
-
             services.AddSingleton<IMessageProducer, RabbitMQProducer>();
         }
 

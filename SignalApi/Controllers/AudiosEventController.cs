@@ -6,19 +6,18 @@ namespace SignalApi.Controllers
     [Route("api/v1/[controller]")]
     public class AudiosEventController : ControllerBase
     {
-        private readonly IMessageService _messageService;
+        private readonly IMessageProducer _messageProducer;
         private readonly ILogger<AudiosEventController> _logger;
 
-        public AudiosEventController(IMessageService messageService, ILogger<AudiosEventController> logger)
+        public AudiosEventController(IMessageProducer messageProducer, ILogger<AudiosEventController> logger)
         {
-            _messageService = messageService;
+            _messageProducer = messageProducer;
             _logger = logger;
         }
 
         [HttpPost]
-        public IActionResult AddAudiosEvent(AudiosEventModel audios)
+        public async Task<IActionResult> AddAudiosEvent(AudiosEventModel audios)
         {
-            IMessageService messageService = new MessageService();
             var audiosEvent = new AudiosEventDto
             {
                 CorrelationId = audios.CorrelationId,
@@ -26,7 +25,7 @@ namespace SignalApi.Controllers
                 RequestedByServer = audios.RequestedByServer,
                 Recordings = MapRecordings(audios.Recordings)
             };
-            _messageService.AddAudiosEvent(audiosEvent);
+            await _messageProducer.PublishAsync(audiosEvent);
             _logger.LogInformation($"Received audios event from device {audios.DeviceId} with correlation ID {audios.CorrelationId}");
 
             return Ok(new { Message = "Audios received", Count = audios.Recordings.Count() });

@@ -2,9 +2,14 @@
 
 namespace SignalApi
 {
-    public class StartUp(IConfiguration configuration)
+    public class StartUp
     {
-        public IConfiguration Configuration { get; } = configuration;
+        public IConfiguration Configuration { get; }
+
+        public StartUp(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -12,7 +17,9 @@ namespace SignalApi
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
 
-            services.AddScoped<IMessageService, MessageService>();
+            //var rabbitMQProducer = new RabbitMQProducer(Configuration);
+
+            services.AddSingleton<IMessageProducer, RabbitMQProducer>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -22,7 +29,7 @@ namespace SignalApi
                 app.UseSwagger();
                 app.UseSwaggerUI(c =>
                 {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "MyApplicationName");
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "SignalApi");
                 });
             }
             app.UseRouting();

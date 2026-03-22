@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace SignalApi.Controllers
 {
     [ApiController]
     [Route("api/v1/audio")]
+    [EnableRateLimiting("PerDevicePolicy")]
     public class AudiosEventController : ControllerBase
     {
         private readonly IMessageProducer _messageProducer;

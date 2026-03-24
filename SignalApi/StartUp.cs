@@ -6,7 +6,7 @@ namespace SignalApi
     public class StartUp
     {
         const int TIME_WINDOW = 60;
-        const int MAX_REQUESTS_PER_DEVICE = 3;
+        const int MAX_REQUESTS_PER_DEVICE = 30;
         public IConfiguration Configuration { get; }
 
         public StartUp(IConfiguration configuration)

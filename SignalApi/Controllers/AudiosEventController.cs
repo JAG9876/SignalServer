@@ -18,7 +18,7 @@ namespace SignalApi.Controllers
         }
 
         [HttpPost]
-       public async Task<IActionResult> AddAudiosEvent(AudiosEventModel audios)
+        public async Task<IActionResult> AddAudiosEvent(AudiosEventModel audios)
         {
             var audiosEvent = new AudiosEventDto
             {

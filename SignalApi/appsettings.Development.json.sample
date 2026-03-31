@@ -1,10 +1,31 @@
 {
-    "Logging": {
-        "LogLevel": {
+    "Serilog": {
+        "Using": [ "Serilog.Sinks.Console", "Serilog.Sinks.File" ],
+        "MinimumLevel": {
             "Default": "Information",
-            "Microsoft.AspNetCore": "Warning"
+            "Override": {
+                "Microsoft": "Warning",
+                "System": "Warning"
+            }
+        },
+        "WriteTo": [
+            { "Name": "Console" },
+            {
+                "Name": "File",
+                "Args": {
+                    "path": "Logs\\applog-.txt",
+                    "rollingInterval": "Day",
+                    "rollOnFileSizeLimit": true,
+                    "formatter": "Serilog.Formatting.Compact.CompactJsonFormatter, Serilog.Formatting.Compact"
+                }
+            }
+        ],
+        "Enrich": [ "FromLogContext", "WithMachineName", "WithThreadId" ],
+        "Properties": {
+            "ApplicationName": "YourAppName"
         }
     },
+    "AllowedHosts": "*",
     "Kestrel": {
         "Certificates": {
             "Default": {
@@ -15,7 +36,26 @@
         "Endpoints": {
             "Https": {
                 "Url": "https://your.domain.name:7102" // Or your desired HTTPS URL/port
+            },
+            "Http": {
+                "Url": "http://*:5228"
             }
         }
+    },
+    "Jwt": {
+        "SecretKey": "YourDevelopmentSecretKeyHere",
+        "Issuer": "YourDevelopmentIssuer",
+        "Audience": "YourDevelopmentAudience",
+        "ExpirationInMinutes": 60
+    },
+    "Signal": {
+        "RabbitMQ": {
+            "HostName": "localhost",
+            "Port": 5672,
+            "UserName": "guest",
+            "Password": "guest",
+            "VirtualHost": "/"
+        },
+        "TTL": 180000
     }
 }

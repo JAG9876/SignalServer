@@ -20,10 +20,14 @@ namespace SignalApi.Controllers
         [HttpPost]
         public async Task<IActionResult> AddAudiosEvent(AudiosEventModel audios)
         {
+            var bearer = Request.Headers["bearer"].FirstOrDefault();
+            var bearerDeviceId = "";
+
+
             var audiosEvent = new AudiosEventDto
             {
                 CorrelationId = audios.CorrelationId,
-                DeviceId = audios.DeviceId,
+                DeviceId = bearerDeviceId,
                 RequestedByServer = audios.RequestedByServer,
                 Recordings = MapRecordings(audios.Recordings)
             };

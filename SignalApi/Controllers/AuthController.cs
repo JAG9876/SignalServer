@@ -7,6 +7,13 @@ namespace SignalApi.Controllers
     [Route("api/v1/[controller]/[action]")]
     public class AuthController : ControllerBase
     {
+        private readonly TokenManager _tokenManager;
+
+        public AuthController(TokenManager tokenManager)
+        {
+            _tokenManager = tokenManager;
+        }
+
         [HttpPost]
         public async Task<IActionResult> LoginWithGoogle(AuthModel model)
         {
@@ -17,12 +24,52 @@ namespace SignalApi.Controllers
                 var userDto = GetOrCreateUser(Payload);
                 var tokensDto = CreateNewTokens(userDto, model.DeviceId);
 
-                return Ok(new { Message = $"Identity confirmed: {Payload.Email} (id={Payload.Subject})", tokensDto.AccessToken, tokensDto.RefreshToken });
+                return Ok(new { Message = $"Identity confirmed: {Payload.Email} (id={Payload.Subject})",
+                    tokensDto.AccessToken, tokensDto.RefreshToken });
             }
             catch (Exception ex)
             {
                 return Unauthorized(new { Message = "Invalid ID token", Error = ex.Message });
             }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RefreshAccessToken(RefreshAccessTokenModel model)
+        {
+            try
+            {
+                /*
+                var principal = _tokenManager.ValidateRefreshToken(model.RefreshToken);
+                var userId = principal.FindFirst("userId")?.Value;
+                var deviceId = principal.FindFirst("deviceId")?.Value;
+                if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(deviceId))
+                {
+                    return Unauthorized(new { Message = "Invalid refresh token" });
+                }
+                */
+                 var deviceId = _tokenManager.ExtractDeviceIdFromToken(model.RefreshToken);
+                 if (string.IsNullOrEmpty(deviceId))
+                 {
+                     return Unauthorized(new { Message = "Invalid refresh token" });
+                }
+                return Ok(new { Message = "Access token refreshed", AccessToken = GenerateAccessTokenForDevice(deviceId) });
+            }
+            catch (Exception ex)
+            {
+                return Unauthorized(new { Message = "Invalid refresh token", Error = ex.Message });
+            }
+        }
+
+        private string GenerateAccessTokenForDevice(string deviceId)
+        {
+            return _tokenManager.GenerateAccessToken(
+                "auth.crawlsoft.com",
+                "test.crawlsoft.com/api/audio", deviceId);
+        }
+
+        private string GenerateRefreshTokenForDevice(string userId, string deviceId)
+        {
+            return _tokenManager.GenerateRefreshToken(userId, deviceId);
         }
 
         /// <summary>
@@ -32,16 +79,12 @@ namespace SignalApi.Controllers
         /// <param name="userDto"></param>
         /// <param name="deviceId"></param>
         /// <returns></returns>
-        private static TokensDto CreateNewTokens(UserDto userDto, string deviceId)
+        private TokensDto CreateNewTokens(UserDto userDto, string deviceId)
         {
-            var accessToken = TokenGenerator.GenerateToken(
-                "12345678901234561234567890123456", "auth.crawlsoft.com",
-                "test.crawlsoft.com/api/audio", deviceId);
             return new TokensDto
             {
-                AccessToken = accessToken,
-                //AccessToken = $"accesstoken-{userDto.Id}-{deviceId}",
-                RefreshToken = $"refreshtoken-{userDto.Id}-{deviceId}"
+                AccessToken = GenerateAccessTokenForDevice(deviceId),
+                RefreshToken = GenerateRefreshTokenForDevice(userDto.Id, deviceId)
             };
         }
 

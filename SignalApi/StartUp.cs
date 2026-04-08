@@ -22,6 +22,10 @@ namespace SignalApi
 
             services.AddSingleton<IMessageProducer, RabbitMQProducer>();
 
+            var tokenSecretKey = Configuration["Signal:Token:SecretKey"] ?? throw new ArgumentNullException("Signal:Token:SecretKey is not configured");
+            services.AddSingleton(new TokenManager(tokenSecretKey));
+            services.AddSingleton(new InMemoryTokenRepository());
+
             services.AddRateLimiter(options =>
             {
                 options.AddPolicy("PerDevicePolicy", context =>

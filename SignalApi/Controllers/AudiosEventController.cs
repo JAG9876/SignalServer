@@ -10,10 +10,12 @@ namespace SignalApi.Controllers
     {
         private readonly IMessageProducer _messageProducer;
         private readonly ILogger<AudiosEventController> _logger;
+        private readonly TokenManager _tokenManager;
 
-        public AudiosEventController(IMessageProducer messageProducer, ILogger<AudiosEventController> logger)
+        public AudiosEventController(IMessageProducer messageProducer, ILogger<AudiosEventController> logger, TokenManager tokenManager)
         {
             _messageProducer = messageProducer;
+            _tokenManager = tokenManager;
             _logger = logger;
         }
 
@@ -21,18 +23,34 @@ namespace SignalApi.Controllers
         public async Task<IActionResult> AddAudiosEvent(AudiosEventModel audios)
         {
             var bearer = Request.Headers["bearer"].FirstOrDefault();
-            var bearerDeviceId = "";
 
+            if (string.IsNullOrEmpty(bearer) || !_tokenManager.ValidateBearerToken(bearer))
+            {
+                var msg = "Invalid or missing bearer token";
+                _logger.LogWarning(msg);
+                Response.Headers["WWW-Authenticate"] = "Bearer";
+                return Unauthorized(new { Message = msg });
+            }
+
+            var deviceId = _tokenManager.ExtractDeviceIdFromToken(bearer);
+            if (string.IsNullOrEmpty(deviceId))
+            {
+                var msg = "Unable to extract device ID from token";
+                _logger.LogWarning(msg);
+                Response.Headers["WWW-Authenticate"] = "Bearer";
+                return Unauthorized(new { Message = msg });
+            }
 
             var audiosEvent = new AudiosEventDto
             {
                 CorrelationId = audios.CorrelationId,
-                DeviceId = bearerDeviceId,
+                DeviceId = deviceId,
                 RequestedByServer = audios.RequestedByServer,
                 Recordings = MapRecordings(audios.Recordings)
             };
             await _messageProducer.PublishAsync(audiosEvent);
-            _logger.LogInformation($"Received audios event from device {audios.DeviceId} with correlation ID {audios.CorrelationId}");
+            _logger.LogInformation($"Received audios event from device {deviceId} with correlation ID {audios.CorrelationId}");
+            _logger.LogInformation($"Bearer = {bearer}");
 
             return Ok(new { Message = "Audios received", Count = audios.Recordings.Count() });
         }

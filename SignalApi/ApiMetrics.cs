@@ -11,6 +11,7 @@ namespace SignalApi
         public ApiMetrics(IMeterFactory meterFactory)
         {
             var meter = meterFactory.Create("crawlsoft.SignalApi");
+
             _requestCounter = meter.CreateCounter<long>("api.audio.requests_total", 
                 description: "Total number of audio requests");
 

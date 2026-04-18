@@ -1,5 +1,6 @@
 ﻿using System.Threading.RateLimiting;
 using Serilog;
+using OpenTelemetry.Metrics;
 
 namespace SignalApi
 {
@@ -19,6 +20,12 @@ namespace SignalApi
             services.AddControllers();
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
+            services.AddOpenTelemetry()
+                .WithMetrics(metrics => metrics
+                    .AddMeter("crawlsoft.SignalApi")
+                    //.AddAspNetCoreInstrumentation()
+                    .AddPrometheusExporter()
+                );
 
             services.AddSingleton<IMessageProducer, RabbitMQProducer>();
 
@@ -57,8 +64,8 @@ namespace SignalApi
                 {
                     var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<StartUp>>();
                     var deviceId = context.HttpContext.Request.Headers["DeviceId"].FirstOrDefault();
-                    logger.LogWarning($"Request from device {deviceId} was rejected due to rate limiting.");
-                    context.HttpContext.Response.Headers["Retry-After"] = $"{TIME_WINDOW}"; // Suggest client to retry after TIME_WINDOW seconds
+                    logger.LogWarning("Request from device {deviceId} was rejected due to rate limiting.", deviceId);
+                    context.HttpContext.Response.Headers.RetryAfter = $"{TIME_WINDOW}"; // Suggest client to retry after TIME_WINDOW seconds
                     await Task.CompletedTask;
                 };
             });
@@ -74,6 +81,7 @@ namespace SignalApi
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "SignalApi");
                 });
             }
+            app.UseOpenTelemetryPrometheusScrapingEndpoint();
             app.UseRouting();
             app.UseSerilogRequestLogging();
             app.UseAuthorization();

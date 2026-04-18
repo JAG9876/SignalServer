@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Diagnostics;
 
 namespace SignalApi.Controllers
 {
@@ -10,34 +11,40 @@ namespace SignalApi.Controllers
     {
         private readonly IMessageProducer _messageProducer;
         private readonly ILogger<AudiosEventController> _logger;
+        private readonly ApiMetrics _apiMetrics;
         private readonly TokenManager _tokenManager;
 
-        public AudiosEventController(IMessageProducer messageProducer, ILogger<AudiosEventController> logger, TokenManager tokenManager)
+        public AudiosEventController(IMessageProducer messageProducer, ILogger<AudiosEventController> logger, 
+            TokenManager tokenManager, ApiMetrics apiMetrics)
         {
             _messageProducer = messageProducer;
             _tokenManager = tokenManager;
             _logger = logger;
+            _apiMetrics = apiMetrics;
         }
 
         [HttpPost]
         public async Task<IActionResult> AddAudiosEvent(AudiosEventModel audios)
         {
+            var sw = Stopwatch.StartNew();
+            _apiMetrics.RecordRequest("POST", "api/v1/audio");
+
             var bearer = Request.Headers["bearer"].FirstOrDefault();
 
             if (string.IsNullOrEmpty(bearer) || !_tokenManager.ValidateBearerToken(bearer))
             {
-                var msg = "Invalid or missing bearer token";
+                const string msg = "Invalid or missing bearer token";
                 _logger.LogWarning(msg);
-                Response.Headers["WWW-Authenticate"] = "Bearer";
+                Response.Headers.WWWAuthenticate = "Bearer";
                 return Unauthorized(new { Message = msg });
             }
 
             var deviceId = _tokenManager.ExtractDeviceIdFromToken(bearer);
             if (string.IsNullOrEmpty(deviceId))
             {
-                var msg = "Unable to extract device ID from token";
+                const string msg = "Unable to extract device ID from token";
                 _logger.LogWarning(msg);
-                Response.Headers["WWW-Authenticate"] = "Bearer";
+                Response.Headers.WWWAuthenticate = "Bearer";
                 return Unauthorized(new { Message = msg });
             }
 
@@ -49,20 +56,30 @@ namespace SignalApi.Controllers
                 Recordings = MapRecordings(audios.Recordings)
             };
             await _messageProducer.PublishAsync(audiosEvent);
-            _logger.LogInformation($"Received audios event from device {deviceId} with correlation ID {audios.CorrelationId}");
-            _logger.LogInformation($"Bearer = {bearer}");
+            _logger.LogInformation("Received audios event from device {DeviceId} with correlation ID {CorrelationId}", deviceId, audios.CorrelationId);
+            _logger.LogInformation("Bearer = {Bearer}", bearer);
 
-            return Ok(new { Message = "Audios received", Count = audios.Recordings.Count() });
+            sw.Stop();
+            _apiMetrics.RecordResponseTime(sw.ElapsedMilliseconds, "success");
+
+            return Ok(new { Message = "Audios received", Count = audios.Recordings.Length });
         }
 
         [HttpGet]
         [Route("instructions")]
         public IActionResult Instructions()
         {
+            var sw = Stopwatch.StartNew();
+            _apiMetrics.RecordRequest("GET", "api/v1/audio/instructions");
+
             // Server returns instructions to the client.
             // Some response examples are:
             //   - send specific audio clips to server (need to specify which clips by buffer index and read time)
             //   - tell the client to pull for new instructions more frequently for a period of 10 minutes
+
+            sw.Stop();
+            _apiMetrics.RecordResponseTime(sw.ElapsedMilliseconds, "success");
+
             return Ok(new { Message = "Here are server instructions for the client" });
         }
 

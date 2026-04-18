@@ -25,6 +25,7 @@ namespace SignalApi
             var tokenSecretKey = Configuration["Signal:Token:SecretKey"] ?? throw new ArgumentNullException("Signal:Token:SecretKey is not configured");
             services.AddSingleton(new TokenManager(tokenSecretKey));
             services.AddSingleton(new InMemoryTokenRepository());
+            services.AddSingleton<ApiMetrics>();
 
             services.AddRateLimiter(options =>
             {

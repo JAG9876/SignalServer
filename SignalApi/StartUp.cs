@@ -23,7 +23,7 @@ namespace SignalApi
             services.AddOpenTelemetry()
                 .WithMetrics(metrics => metrics
                     .AddMeter("crawlsoft.SignalApi")
-                    //.AddAspNetCoreInstrumentation()
+                    .AddAspNetCoreInstrumentation()
                     .AddPrometheusExporter()
                 );
 

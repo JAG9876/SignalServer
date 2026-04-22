@@ -10,8 +10,13 @@ services:
     image: crawlsoft/signalapi:latest
     container_name: signalapi
     restart: unless-stopped
+    volumes:
+        - logs:/app/Logs
 
 #  nginx:
 #    image: nginx-image:latest
 #    container_name: nginx
 #    restart: unless-stopped
+
+volumes:
+    logs:

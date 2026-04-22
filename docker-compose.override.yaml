@@ -1,0 +1,14 @@
+services:
+#  prometheus:
+#    ports:
+#      - "9090:9090"
+
+  signalapi:
+    ports:
+      - "5228:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+
+#  nginx:
+#    ports:
+#      - "8443:8443"
